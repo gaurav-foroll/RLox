@@ -135,7 +135,7 @@ impl Interpreter {
             }
             Stmt::Print { expression } => {
                 let val = self.evaluate_expression(expression);
-                println!("{}", val);
+                print!("{}", val);
             }
             Stmt::Var { name, initalizer } => {
                 let mut value: Object = Object::Null;
