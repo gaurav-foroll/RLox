@@ -7,6 +7,7 @@ use token::{Token, Tokentype};
 pub struct Scanner {
     source: String,
     pub tokens: Vec<Token>,
+    // variable to track char
     start: usize,
     current: usize,
     line: usize,
@@ -114,7 +115,7 @@ impl Scanner {
                 } else if is_alpha(character) {
                     self.identifier();
                 } else {
-                    println!("Unexpected token.")
+                    println!("Unexpected token : {} .", character)
                 }
             }
         }
@@ -125,7 +126,7 @@ impl Scanner {
 impl Scanner {
     // checks if code ended
     fn is_at_end(&self) -> bool {
-        self.current >= self.source.len()
+        self.current >= self.source.chars().count()
     }
 
     // moves 1 character ahead in source and returns current character
@@ -139,14 +140,14 @@ impl Scanner {
 
     // adds the token provided to tokens list
     fn add_token(&mut self, tokentype: Tokentype) {
-        let text = self.source[self.start..self.current].to_string();
+        let text = self.slice_string_by_chars();
         let token = Token::new(tokentype, text, Object::Null, self.line);
         self.tokens.push(token);
     }
 
     // adds token with its literal to the list
     fn add_token_with_literal(&mut self, tokentype: Tokentype, literal: Object) {
-        let text = self.source[self.start..self.current].to_string();
+        let text = self.slice_string_by_chars();
         let token = Token::new(tokentype, text, literal, self.line);
         self.tokens.push(token);
     }
@@ -173,12 +174,35 @@ impl Scanner {
         true
     }
 
+    // keeps utf8 in mind
+    fn slice_string_by_chars(&self) -> String {
+        let s_slice = &self.source[..];
+        let start_byte_pos = s_slice.char_indices().nth(self.start).unwrap().0;
+        let current_byte_pos = s_slice
+            .char_indices()
+            .nth(self.current)
+            .unwrap_or((self.source.len(), '\0'))
+            .0;
+        self.source[start_byte_pos..current_byte_pos].to_string()
+    }
+
+    fn get_string(&self) -> String {
+        let s_slice = &self.source[..];
+        let start_byte_pos = s_slice.char_indices().nth(self.start + 1).unwrap().0;
+        let current_byte_pos = s_slice
+            .char_indices()
+            .nth(self.current - 1)
+            .unwrap_or((self.source.len(), '\0'))
+            .0;
+        self.source[start_byte_pos..current_byte_pos].to_string()
+    }
+
     // checks next character and return next character (does not moves the scanner to the next character)
-    fn peek(&self) -> String {
+    fn peek(&self) -> char {
         if self.is_at_end() {
-            return String::from("\0");
+            return '\0';
         }
-        self.source.chars().nth(self.current).unwrap().to_string()
+        self.source.chars().nth(self.current).unwrap()
     }
 
     // just check next character dont consume
@@ -192,8 +216,8 @@ impl Scanner {
 
     // utility to find string literals in source
     fn string(&mut self) {
-        while self.peek().chars().nth(0).unwrap() != '"' && !self.is_at_end() {
-            if self.peek() == "\n" {
+        while self.peek() != '"' && !self.is_at_end() {
+            if self.peek() == '\n' {
                 self.line += 1;
             }
             self.advance();
@@ -208,13 +232,13 @@ impl Scanner {
         self.advance();
 
         // adding token
-        let value = self.source[self.start + 1..self.current - 1].to_string();
+        let value = self.get_string();
         self.add_token_with_literal(Tokentype::String, Object::StringValue(value));
     }
 
     fn multi_line_comment(&mut self) {
-        while self.peek() != "*" && self.peek_next() != '/' && !self.is_at_end() {
-            if self.peek() == "\n" {
+        while self.peek() != '*' && self.peek_next() != '/' && !self.is_at_end() {
+            if self.peek() == '\n' {
                 self.line += 1;
             }
             self.advance();
@@ -225,32 +249,34 @@ impl Scanner {
 
     // utility to find number literal
     fn number(&mut self) {
-        while is_digit(self.peek().chars().nth(0).unwrap()) {
+        while is_digit(self.peek()) {
             self.advance();
         }
-        if self.peek() == "." && is_digit(self.peek_next()) {
+        if self.peek() == '.' && is_digit(self.peek_next()) {
             self.advance();
-            while is_digit(self.peek().chars().nth(0).unwrap()) {
+            while is_digit(self.peek()) {
                 self.advance();
             }
-            let float = self.source[self.start..self.current]
+            let float = self
+                .slice_string_by_chars()
                 .parse()
                 .expect("number out of range");
             self.add_token_with_literal(Tokentype::Number, Object::FloatValue(float));
             return;
         }
         // adding token
-        let integer = self.source[self.start..self.current]
+        let integer = self
+            .slice_string_by_chars()
             .parse()
             .expect("number out of range");
         self.add_token_with_literal(Tokentype::Number, Object::IntValue(integer))
     }
 
     fn identifier(&mut self) {
-        while is_alpha_numeric(self.peek().chars().nth(0).unwrap()) {
+        while is_alpha_numeric(self.peek()) {
             self.advance();
         }
-        let text: String = self.source[self.start..self.current].to_string();
+        let text: String = self.slice_string_by_chars();
         match self.keywords.get(&text) {
             Some(result) => self.add_token(*result),
             _ => self.add_token(Tokentype::Identifier),
@@ -264,13 +290,24 @@ pub fn is_digit(character: char) -> bool {
 }
 
 pub fn is_alpha(character: char) -> bool {
-    (character >= 'a' && character <= 'z')
-        || (character >= 'A' && character <= 'Z')
-        || character == '_'
+    character.is_alphabetic()
 }
 
 pub fn is_alpha_numeric(character: char) -> bool {
-    is_alpha(character) || is_digit(character)
+    character.is_alphanumeric() || character == '्'
+    /*special treatment for ् as this character is connector in hindi and considered non alphanumeric
+            let a = String::from("अन्यथा");
+            for chars in a.chars(){
+                println!("{} - {}",chars,chars.is_alphanumeric());
+            }
+
+    अ - true
+    न - true
+     ् - false
+    य - true
+    थ - true
+     ा - true
+     */
 }
 
 fn read_tokenfile(mut map: HashMap<String, Tokentype>) -> HashMap<String, Tokentype> {
