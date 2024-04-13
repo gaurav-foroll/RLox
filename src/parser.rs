@@ -86,9 +86,86 @@ impl Parser {
             }
         } else if self.match_tokens(&[Tokentype::While]) {
             self.while_statement()
+        } else if self.match_tokens(&[Tokentype::For]) {
+            self.for_statement()
         } else {
             self.expression_statement()
         }
+    }
+
+    fn for_statement(&mut self) -> Stmt {
+        const NULL_EXPR: Expr = Expr::Literal {
+            value: Object::Null,
+        };
+        const NULL_STATEMENT: Stmt = Stmt::Expression {
+            expression: Expr::Literal {
+                value: Object::Null,
+            },
+        };
+        let _ = self.consume(Tokentype::LeftParen, "Expected ( after 'for' ");
+        // initalizer of the for loop if used
+        let initalizer: Stmt;
+        if self.match_tokens(&[Tokentype::Semicolon]) {
+            initalizer = NULL_STATEMENT.clone();
+        } else if self.match_tokens(&[Tokentype::Var]) {
+            match self.var_declaration() {
+                Ok(statement) => {
+                    initalizer = statement;
+                }
+                Err(string) => {
+                    println!("{}\nAssigning Null instead", string);
+                    initalizer = NULL_STATEMENT.clone();
+                }
+            };
+        } else {
+            initalizer = self.expression_statement();
+        }
+
+        // condition of the for loop
+        let mut condition: Expr = NULL_EXPR.clone();
+        if !self.check(Tokentype::Semicolon) {
+            condition = self.expression();
+        }
+        let _ = self.consume(Tokentype::Semicolon, "Expect ';' after loop condition.");
+
+        // increment of the for loop
+        let mut increment: Expr = NULL_EXPR.clone();
+        if !self.check(Tokentype::Semicolon) {
+            increment = self.expression();
+        }
+        let _ = self.consume(Tokentype::RightParen, "Expect ')' after for clauses.");
+
+        // body of the for loop
+        let mut body = self.statement();
+        // append increment to the bottom of the for body
+        if increment != NULL_EXPR {
+            body = Stmt::Block {
+                statements: Vec::from([
+                    body,
+                    Stmt::Expression {
+                        expression: increment,
+                    },
+                ]),
+            };
+        }
+
+        if condition == NULL_EXPR {
+            condition = Expr::Literal {
+                value: Object::False,
+            }
+        }
+        body = Stmt::While {
+            condition,
+            body: Box::new(body),
+        };
+
+        if initalizer != NULL_STATEMENT {
+            body = Stmt::Block {
+                statements: Vec::from([initalizer, body]),
+            }
+        }
+
+        body
     }
 
     fn while_statement(&mut self) -> Stmt {
