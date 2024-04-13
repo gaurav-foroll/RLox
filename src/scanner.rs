@@ -83,13 +83,16 @@ impl Scanner {
             // multi character tokens
             '/' => {
                 if self.check_next_char("/") {
-                    // deal with comments
+                    // example code to print comments can be used to change behaviour of the interpreter
                     // let mut comment = String::from("");
                     // while self.peek() != "\n" && !self.is_at_end() {
                     //     let char = self.advance();
                     //     comment.push(char);
                     // }
                     // println!("comment is : {}", comment)
+                    while self.peek() != '\n' && !self.is_at_end() {
+                        let _ = self.advance();
+                    }
                 } else if self.check_next_char("*") {
                     self.multi_line_comment();
                 } else {
