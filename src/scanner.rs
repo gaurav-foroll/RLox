@@ -297,7 +297,7 @@ pub fn is_alpha(character: char) -> bool {
 }
 
 pub fn is_alpha_numeric(character: char) -> bool {
-    character.is_alphanumeric() || character == '्'
+    character.is_alphanumeric() || character == '्' || character == '_'
     /*special treatment for ् as this character is connector in hindi and considered non alphanumeric
             let a = String::from("अन्यथा");
             for chars in a.chars(){
