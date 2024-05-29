@@ -33,12 +33,14 @@ my personal favourite:
 | .tokenfile| Code |
 |-----------|------|
 |```print : hello_world ```|```hello_world "print"```|
-|```print```|
+|Output  ->|```print```|
 
 <h2 align="center">Installation</h2>
 
 Windows: Check the releases section.
+
 Linux: You will figure out how to build this project dont worry.
+
 Mac: We recommend using an emulator. Just ignore the overheating and random crashes.
 
 <h2 align="center">Documentation</h2>
