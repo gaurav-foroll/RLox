@@ -5,45 +5,41 @@
  <b>RLox is a programming language written in Rust, solely designed to make memes.</b>
 </p>
 
-<h2 align="center">Installation</h2>
-Go To Actions section of this page :
-
-![Go to Actions Section](./docs/installation_action.png)
-
-Click on the latest Commit under workflow runs section :
-
-![Click on the latest Commit](./docs/installation_commit_section.png)
-
-Scroll to the bottom you will find Artifacts section click on rlox this will start downloading rlox.zip now you can use rlox!
-
-![click on rlox](./docs/installation_rlox.png)
-
-
 <h2 align="center">Usage</h2>
-<h3 align="center">General</h3>
 REPL:
 Type 
-<code>./rlox.exe</code> in the terminal to start repl mode which looks like :
+<code>rlox</code> in the terminal to start repl mode which looks like :
 
-![Repl Preview](./docs/usage_general_repl.png)
+![Repl Preview](./docs/RLox_REPL.png)
 
-To run a file make sure rlox.exe is in same directory as your source file. You can run your file simply by typing <code>./rlox file_name</code> replace file_name with your file name example:
-
-![File Structure](./docs/usage_general.png)
+You can run your file simply by typing <code>rlox [file name]</code> replace file name with your file name example:
 
 
-<h3 align="center">Dynamic Scanner</h3>
+| .tokenfile| Code |
+|-----------|------|
+|![Empty tokenfile](./docs/TokenFile_Empty.png) |![code](./docs/Raw_Rlox.png)|
+|Output  ->|![Output](./docs/Output1.png)|
 
-Define .tokenfile using rules defined [here](#dynamic_scanner)
-example:
+**You can change keywords if you want**
 
-![File Structure](./docs/usage_dynamic_scanner.png)
-
-this works in REPL mode too!:
-
-![File Structure](./docs/usage_dynamic_scanner_repl.png)
+| .tokenfile| Code |
+|-----------|------|
+|![Empty tokenfile](./docs/TokenfFile_BhaiLang.png) |![code](./docs/BhaiLang_RLox.png)|
+|Output  ->|![Output](./docs/Output2.png)|
 
 yes this is similar to [bhialang](https://github.com/DulLabs/bhai-lang) you can find the preset for this in presets folder you can also add your presets to this repository for others to use refer [contribution guidelines](CONTRIBUTING.md) to raise pr.
+
+my personal favourite:
+| .tokenfile| Code |
+|-----------|------|
+|```print : hello_world ```|```hello_world "print"```|
+|```print```|
+
+<h2 align="center">Installation</h2>
+
+Windows: Check the releases section.
+Linux: You will figure out how to build this project dont worry.
+Mac: We recommend using an emulator. Just ignore the overheating and random crashes.
 
 <h2 align="center">Documentation</h2>
 
@@ -122,17 +118,13 @@ while (a<10){
 ```
 
 <h3 align="center" id="dynamic_scanner">Dynamic Scanner</h3>
-<p align="center">When scanning the code RLox's scanner looks for a <code>.tokenfile</code> file in your directory and replaces reserved keyword with the tokens defined.Make sure tokens you replace are ones listed below.Pattern to replace tokens is as follows: Native_Token_Name : Your_Desired_Token_Name.Note token names should not contain any of these characters +,-,/,*,=,<,>,",{,},[,],(,) and whitespace characters.</p>
+When scanning the code, RLox's scanner looks for a <code>.tokenfile</code> file in your directory. If the file exists, it replaces reserved keywords with the tokens defined in the file.
 
-```
-print : helloworld
-```
-<p>Now your program looks like:</p>
 
-```
-var a = "Print";
-helloworld a ; //prints Print to the console and adds \n to the end.
-```
+Make sure the tokens you replace are listed below:
+* Pattern to replace tokens is as follows:
+    * Native_Token_Name : Your_Desired_Token_Name
+* **Note:** Token names should be alphanumeric and can contain underscores between them.
 
 <h3 align="center">Tokens</h3>
 
@@ -146,8 +138,8 @@ helloworld a ; //prints Print to the console and adds \n to the end.
 - [x] or
 - [x] and
 - [x] while
+- [x] for
 - [ ] class
-- [ ] for
 - [ ] fun
 - [ ] super
 - [ ] this
